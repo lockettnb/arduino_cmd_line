@@ -1,0 +1,106 @@
+# The name of your project (used to name the compiled .hex file)
+# TARGET = $(nodir $CURDIR) 
+TARGET = blink
+
+# change BOARD to match your arduino type
+# BOARD = uno
+BOARD = mega
+
+# Arduino UNO Compiler Flag Variations
+MMCU = atmega328p
+ARDU_TYPE= ARDUINO_AVR_UNO
+
+# avrdude UNO options
+PART = m328p
+PROGRAMMERID = arduino
+
+# override UNO options if this is a MEGA
+ifeq ($(BOARD),mega)
+	MMCU = atmega2560
+	ARDU_TYPE = ARDUINO_AVR_MEGA2560
+	PART = m2560
+	PROGRAMMERID = stk500v2
+endif
+
+# directory locations for Arduino package and my source directory
+ARDUINOPATH = /home/john/opt/arduino-1.6.1
+SRCPATH = /home/john/src/$(BOARD)
+
+# serial port (via USB) for Mint Linux
+PORT=/dev/ttyACM0
+
+# ******************************************************************
+# ******************************************************************
+#	NOTHING BELOW HERE SHOULD NEED TO BE CHANGED .... hopefully!!
+# ******************************************************************
+# ******************************************************************
+
+# Path to your arduino installation
+INCPATH = $(SRCPATH)/include
+LIBPATH = $(SRCPATH)/lib
+
+# path location for tools; compiler, assembler, linker etc 
+TOOLPATH = $(ARDUINOPATH)/hardware/tools/avr/bin
+TOOLCONF = $(ARDUINOPATH)/hardware/tools/avr/etc
+
+# path location for the arm-none-eabi compiler
+# COMPILERPATH = $(ARDUINOPATH)/hardware/tools/avr/bin
+
+# stolen for the "verbose" output of Arduino compile process 
+CFLAGS = -c -g -Os -w -ffunction-sections -fdata-sections -MMD -mmcu=$(MMCU) -DF_CPU=16000000L -DARDUINO=10601 -D$(ARDU_TYPE) -DARDUINO_ARCH_AVR
+
+CPPFLAGS = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics  -mmcu=$(MMCU) -DF_CPU=16000000L -DARDUINO=10601 -D$(ARDU_TYPE) -DARDUINO_ARCH_AVR
+
+# linker options
+LDFLAGS = -w -Os -Wl,--gc-sections -mmcu=$(MMCU)
+
+# libraries...this is the build location for my version of the library
+LIBS = $(LIBPATH)/core.a  -lm
+
+# names for the build tool  programs
+CC = $(abspath $(TOOLPATH))/avr-gcc
+CXX = $(abspath $(TOOLPATH))/avr-g++
+AR = $(abspath $(TOOLPATH))/avr-ar
+OBJCOPY = $(abspath $(TOOLPATH))/avr-objcopy
+OBJDUMP = $(abspath $(TOOLPATH))/avr-objdump
+
+UPLOAD = $(abspath $(TOOLPATH))/avrdude
+UPLOADCONF = $(TOOLCONF)/avrdude.conf
+
+
+# automatically create lists of the sources and objects
+# TODO: this does not handle Arduino libraries yet...
+# C_FILES := $(wildcard *.c)
+# CPP_FILES := $(wildcard *.cpp)
+# OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+
+
+.SECONDARY:
+
+all: $(TARGET).hex
+
+%.hex: %.elf
+	$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+%.o: %.cpp
+	$(CXX) $(CPPFLAGS) -I$(INCPATH) -o "$@" "$<"
+
+%.o: %.c
+	$(CC) $(CFLAGS) -I$(INCPATH) -o "$@" "$<"
+
+%.elf: %.o
+	$(CC) $(LDFLAGS) -o "$@" "$<" -L$(LIBPATH) $(LIBS)
+
+upload: $(TARGET).hex
+	$(UPLOAD) -V -F -p $(PART) -c $(PROGRAMMERID) -C $(UPLOADCONF) -b 115200 -Uflash:w:$(TARGET).hex -P$(PORT)
+
+dump: 
+	$(OBJDUMP) -d $(TARGET).elf
+
+# compiler generated dependency info
+# -include $(OBJS:.o=.d)
+
+clean:
+	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+
+
