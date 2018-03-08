@@ -1,0 +1,120 @@
+# Arduino installation directory and path to ARM tools 
+ARDUINOPATH = /home/john/opt/arduino-1.6.1
+
+# Compiler Flag Variations
+# ....UNO 
+MMCU = atmega328p
+ARDU_TYPE= ARDUINO_AVR_UNO
+#
+# ....MEGA 
+# MMCU = atmega2560
+# ARDU_TYPE = ARDUINO_AVR_MEGA2560
+
+
+
+
+# ******************************************************************
+# ******************************************************************
+#   NOTHING BELOW HERE SHOULD NEED TO BE CHANGED .... hopefully!!
+# ******************************************************************
+# ******************************************************************
+
+
+# path location for all the various tools...compiler assembler linker etc
+TOOLSPATH = $(ARDUINOPATH)/hardware/tools/avr/bin
+
+# path location for the arm-none-eabi compiler
+COMPILERPATH = $(TOOLSPATH)
+
+# path location for core library source code and header files
+COREPATH = $(CURDIR)
+
+# directory to build in
+BUILDPATH = $(abspath $(CURDIR)/build)
+
+# install location core library and include
+LIBPATH = $(abspath $(CURDIR)/../lib)
+INCPATH = $(abspath $(CURDIR)/../include)
+
+# flages stolen for the "verbose" output of Arduino compile process 
+CFLAGS = -c -g -Os -w -ffunction-sections -fdata-sections -MMD -mmcu=$(MMCU) -DF_CPU=16000000L -DARDUINO=10601 -D$(ARDU_TYPE) -DARDUINO_AVR_AVR
+
+CPPFLAGS = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=$(MMCU) -DF_CPU=16000000L -DARDUINO=10601 -D$(ARDU_TYPE) -DARDUINO_ARCH_AVR
+
+# linker options
+LDFLAGS = -w -Os -Wl,--gc-sections -mmcu=$(MMCU)
+
+# names for the compiler programs
+CC = $(abspath $(COMPILERPATH))/avr-gcc
+CXX = $(abspath $(COMPILERPATH))/avr-g++
+AR = $(abspath $(COMPILERPATH))/avr-ar
+OBJCOPY = $(abspath $(COMPILERPATH))/avr-objcopy
+# SIZE = $(abspath $(COMPILERPATH))/arm-none-eabi-size
+
+# automatically create lists of the sources and objects
+# ASM_FILES := $(wildcard *.S)
+C_FILES := $(wildcard *.c)
+CPP_FILES := $(wildcard *.cpp)
+INC_FILES := $(wildcard *.h)
+
+
+SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+OBJS := $(foreach src,$(SOURCES), $(BUILDPATH)/$(src))
+
+all: build includes
+
+build: $(OBJS)
+	mkdir -p "$(LIBPATH)"
+	$(AR) rcs $(LIBPATH)/core.a $(OBJS)	
+
+	
+includes: $(INC_FILES)
+	mkdir -p "$(INCPATH)"
+	cp $(INC_FILES) $(INCPATH)
+
+
+lib: build 
+
+# install location core library and include
+
+# $(TOOLPATH)/arm/bin/arm-none-eabi-gcc $(ASMFLAGS) -I$COREPATH) $(COREPATH)/memcpy-armv7m.S -o $(BUILDPATH)/memcpy-armv7m.S.o                                                              
+$(BUILDPATH)/%.o: %.S
+	mkdir -p "$(dir $@)"
+	$(CC) $(ASMFLAGS) -I$(COREPATH)  -o "$@" -c "$<"                                                             
+
+$(BUILDPATH)/%.o: %.c
+	mkdir -p "$(dir $@)"
+	$(CC) $(CFLAGS) -I$(COREPATH) -o "$@" -c "$<"
+
+$(BUILDPATH)/%.o: %.cpp
+	echo "[CXX]\t$<"
+	mkdir -p "$(dir $@)"
+	$(CXX) $(CPPFLAGS) -I$(COREPATH) -o "$@" -c "$<"
+
+
+
+# compiler generated dependency info
+# -include $(OBJS:.o=.d)
+
+clean:
+	@echo Cleaning...
+	rm -rf "$(BUILDPATH)"
+	rm -rf $(INCPATH)/*.h
+	rm -rf $(LIBPATH)/core.a
+
+
+dump:
+	@echo "COREPATH     \t$(COREPATH)"
+	@echo "COMPILERPATH\t$(COMPILERPATH)"
+	@echo "BUILDPATH   \t$(BUILDPATH)"
+	@echo "LIBPATH     \t$(LIBPATH)"
+	@echo "INCPATH     \t$(INCPATH)"
+	@echo "Assembler FILES:"
+	@echo $(ASM_FILES) | gawk '{for (i=1;i<=NF;i++) print $$i}'
+	@echo "C FILES:"
+	@echo $(C_FILES) | gawk '{for (i=1;i<=NF;i++) print $$i}'
+	@echo "CPP FILES:"
+	@echo $(CPP_FILES) | gawk '{for (i=1;i<=NF;i++) print $$i}'
+	@echo "Object FILES:"
+	@echo $(OBJS) | gawk '{for (i=1;i<=NF;i++) print $$i}'
+

@@ -1,0 +1,82 @@
+# The name of your project (used to name the compiled .hex file)
+# TARGET = $(nodir $CURDIR) 
+TARGET = tardis
+
+# Path to your arduino installation
+#ARDUINOPATH ?= ../../../../..
+#ARDUINOPATH ?= ../../../..
+ARDUINOPATH = /home/john/opt/arduino-1.6.1
+UNOPATH = /home/john/src/arduino
+INCPATH = $(UNOPATH)/include
+LIBPATH = $(UNOPATH)/lib
+PORT=/dev/ttyACM0
+
+# path location for Teensy Loader, teensy_post_compile and teensy_reboot
+TOOLSPATH = $(ARDUINOPATH)/hardware/tools   # on Linux
+# COREPATH=$(TEENSYPATH)/hardware/teensy/avr/cores/teensy3
+
+# path location for Arduino libraries (currently not used)
+# LIBRARYPATH = $(ARDUINOPATH)/libraries
+
+# path location for the arm-none-eabi compiler
+COMPILERPATH = $(ARDUINOPATH)/hardware/tools/avr/bin
+
+# stolen for the "verbose" output of Arduino compile process 
+CFLAGS = -c -g -Os -w -ffunction-sections -fdata-sections -MMD -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=10601 -DARDUINO_AVR_UNO -DARDUINO_ARCH_AVR
+
+CPPFLAGS = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics  -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=10601 -DARDUINO_AVR_UNO -DARDUINO_ARCH_AVR
+# CPPFLAGS = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=10601 -DARDUINO_AVR_UNO -DARDUINO_ARCH_AVR
+
+# linker options
+LDFLAGS = -w -Os -Wl,--gc-sections -mmcu=atmega328p
+
+
+# libraries to link
+LIBS = $(LIBPATH)/core.a  -lm
+
+# names for the compiler programs
+CC = $(abspath $(COMPILERPATH))/avr-gcc
+CXX = $(abspath $(COMPILERPATH))/avr-g++
+AR = $(abspath $(COMPILERPATH))/avr-ar
+OBJCOPY = $(abspath $(COMPILERPATH))/avr-objcopy
+
+# automatically create lists of the sources and objects
+# TODO: this does not handle Arduino libraries yet...
+# C_FILES := $(wildcard *.c)
+# CPP_FILES := $(wildcard *.cpp)
+# OBJS := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o)
+
+
+.SECONDARY:
+
+all: $(TARGET).hex
+
+#$(TARGET).elf: $(OBJS) mk20dx256.ld
+#$(TARGET).elf: $(OBJS)
+#	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+%.hex: %.elf
+	$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+%.o: %.cpp
+	$(CXX) $(CPPFLAGS) -I$(INCPATH) -o "$@" "$<"
+
+%.o: %.c
+	$(CC) $(CFLAGS) -I$(INCPATH) -o "$@" "$<"
+
+%.elf: %.o
+	$(CC) $(LDFLAGS) -o "$@" "$<" -L$(LIBPATH) $(LIBS)
+
+upload: $(TARGET).hex
+	avrdude -V -F -p m328p -c arduino -b 115200 -Uflash:w:tardis.hex -P$(PORT)
+
+dump: 
+	$(OBJDUMP) -d $(TARGET).elf
+
+# compiler generated dependency info
+# -include $(OBJS:.o=.d)
+
+clean:
+	rm -f *.o *.d $(TARGET).elf $(TARGET).hex
+
+
