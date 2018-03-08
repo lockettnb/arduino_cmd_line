@@ -52,7 +52,7 @@ this core library and the core header files.  This makefile uses the tools
 + I'm not using sketches (.ino) files.  I put my source in cpp files and they
 need to include the header files and have a main function. 
 
-
+```
     #include <stdio.h>
     #include <string.h>
     #include "Arduino.h"
@@ -78,15 +78,16 @@ need to include the header files and have a main function.
         digitalWrite(LED_BUILTIN, LOW);   
        delay(155);                      
       }
-      
+
       digitalWrite(LED_BUILTIN, HIGH);   
       delay(500);                      
       digitalWrite(LED_BUILTIN, LOW);    
       delay(2000); digitalWrite(LED_BUILTIN, HIGH);
-      
+
     } // while
-     
+
     } // main
+```
 
 
 + I am also using the UNO and MEGA boards so I repeated this process for each board
