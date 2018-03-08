@@ -1,12 +1,13 @@
-
-
+//
+// 2018/03/08 arduinon 1.8.5/teensy 1.4.1 example 
+//
 
 #include <stdio.h>
 #include <string.h>
 #include "Arduino.h"
-#include "HardwareSerial.h"
-#include <avr/io.h>
-#include <avr/interrupt.h>
+// #include "HardwareSerial.h"
+// #include <avr/io.h>
+// #include <avr/interrupt.h>
 
 
 void setup() {
