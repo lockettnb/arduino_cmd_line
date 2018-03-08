@@ -20,17 +20,21 @@ Here is the highlevel overview of the process I used:
     "/home/john/opt/arduino-1.8.5/"
 
 + download and install teensy 1.4.1
+
      https://www.pjrc.com/teensy/td_141/TeensyduinoInstall.linux64
 
 + copy the Teensy core source and header files into my teensy project source directory
-    cp -R /home/john/opt/arduino-1.8.5/hardware/teensy/avr/cores/teensy3/ ~/src/teensy/
+
+    $ cp -R /home/john/opt/arduino-1.8.5/hardware/teensy/avr/cores/teensy3/ ~/src/teensy/
 
 
 + copy the Arduino/Teensy tools (compiler, linker, uploader etc) 
-    cp -R /home/john/opt/arduino-1.8.5/hardware/tools ~/src/teensy/
+
+    $ cp -R /home/john/opt/arduino-1.8.5/hardware/tools ~/src/teensy/
 
 + copy the Teensy core makefile into the teensy3 directory
-        cp makefile_teensy_core-1.8.5 ~/src/teensy/teensy3/Makefile
+
+        $ cp makefile_teensy_core-1.8.5 ~/src/teensy/teensy3/Makefile
         .........and then make the core library
 
 + The Arduino IDE  compiles the Arduino library on the fly into the tmp
@@ -39,7 +43,7 @@ directory. Essentially I copied all the compiler and linker flag into a makefile
 that compiles the core source files and combines them into a library.
 
 + The result of the compile/archive process are installed into "lib" and
-"include" directories in my teensy project source directory.
+"include" directories in my project source directory.
 
 + Each project has a makefile (copy of makefile_project-18.5) that links to
 this core library and the core header files.  This makefile uses the tools
@@ -48,13 +52,13 @@ this core library and the core header files.  This makefile uses the tools
 + I'm not using sketches (.ino) files.  I put my source in cpp files and they
 need to include the header files and have a main function. 
 
+
     #include <stdio.h>
     #include <string.h>
     #include "Arduino.h"
     #include "HardwareSerial.h"
     #include <avr/io.h>
     #include <avr/interrupt.h>
-
 
     void setup() {
       // initialize digital pin LED_BUILTIN as an output.
@@ -78,11 +82,12 @@ need to include the header files and have a main function.
       digitalWrite(LED_BUILTIN, HIGH);   
       delay(500);                      
       digitalWrite(LED_BUILTIN, LOW);    
-      delay(2000); digitalWrite(LED_BUILTIN, HIGH);   
+      delay(2000); digitalWrite(LED_BUILTIN, HIGH);
       
     } // while
      
     } // main
+
 
 + I am also using the UNO and MEGA boards so I repeated this process for each board
 type.  I keep the source files in seperate source directories 
