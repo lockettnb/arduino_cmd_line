@@ -63,7 +63,6 @@ need to include the header files and have a main function.
 // #include <avr/io.h>
 // #include <avr/interrupt.h>
 
-
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
@@ -71,26 +70,25 @@ void setup() {
 
 int main(void)
 {
-  int i;
+ int i;
 
-setup();
+    setup();
 
-// the loop function runs over and over again forever
-while (1) {  
-  for (i=0; i<50; i++) {
-    digitalWrite(LED_BUILTIN, HIGH);   
-    delay(50); 
-    digitalWrite(LED_BUILTIN, LOW);   
-   delay(155);                      
-  }
-  
-  digitalWrite(LED_BUILTIN, HIGH);   
-  delay(500);                      
-  digitalWrite(LED_BUILTIN, LOW);    
-  delay(2000); digitalWrite(LED_BUILTIN, HIGH);   
-  
-} // while
- 
+    // the loop function runs over and over again forever
+    while (1) {  
+      for (i=0; i<50; i++) {
+        digitalWrite(LED_BUILTIN, HIGH);   
+        delay(50); 
+        digitalWrite(LED_BUILTIN, LOW);   
+       delay(155);                      
+      }
+      
+      digitalWrite(LED_BUILTIN, HIGH);   
+      delay(500);                      
+      digitalWrite(LED_BUILTIN, LOW);    
+      delay(2000); digitalWrite(LED_BUILTIN, HIGH);   
+      
+    } // while
 } // main
 ```
 
