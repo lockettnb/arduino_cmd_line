@@ -107,3 +107,24 @@ Old Notes
     cp /home/john/opt/arduino-1.8.5/hardware/arduino/avr/cores/arduino/* ~/src/uno/core-1.8.5
     Note: I'm using the Arduino Uno so we copy the "standard" pins header file.
           There are other header file for mega/leonardo etc in the variant directory.
+
+Keyboard Notes
+--------------
+The normal sketch compile is configured to produce a USB serial device.  One of my 
+project was to have the teensy be a USB keyboard device.  To do this I had
+to change the compiler flags from:
+-c -O2 -g -Wall -ffunction-sections -fdata-sections -nostdlib -MMD
+ -fno-exceptions -felide-constructors -std=gnu++14 -fno-rtti -mthumb 
+ -mcpu=cortex-m4 -fsingle-precision-constant -D__MK20DX256__ 
+ -DTEENSYDUINO=141 -DARDUINO=10805 -DF_CPU=96000000
+ -DUSB_SERIAL -DLAYOUT_US_ENGLISH 
+
+to 
+-c -O2 -g -Wall -ffunction-sections -fdata-sections -nostdlib -MMD
+ -fno-exceptions -felide-constructors -std=gnu++14 -fno-rtti -mthumb
+ -mcpu=cortex-m4 -fsingle-precision-constant -D__MK20DX256__ 
+-DTEENSYDUINO=141 -DARDUINO=10805 -DF_CPU=96000000 
+-DUSB_KEYBOARDONLY -DLAYOUT_US_ENGLISH
+
+Notice the only diff is the -DUSB_SERIAL vs -DUSB_KEYBOARDONLY
+This need to be changed in the project makefile.
