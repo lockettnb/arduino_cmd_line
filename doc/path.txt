@@ -1,0 +1,1 @@
+/home/john/opt/arduino-1.8.8/hardware/arduino/avr/cores
