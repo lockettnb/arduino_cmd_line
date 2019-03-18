@@ -1,6 +1,10 @@
 
 Arduino/Teensy from the Command Line
 ====================================
+
+Currently under major construction..... ignore this readme.
+
+
 A couple of years ago I was looking for a good explanation on using the
 command line to compile/upload Arduino code. 
 I found bits and pieces but nothing that really explained the whole process.
